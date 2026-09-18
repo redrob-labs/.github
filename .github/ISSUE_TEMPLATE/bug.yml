@@ -1,0 +1,88 @@
+name: Bug report
+description: Something behaves differently from how it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report a security vulnerability here. See the
+        [security policy](https://github.com/redrob-labs/.github/blob/main/SECURITY.md).
+
+        Most of these repositories are forks. If you already know the bug is in upstream code,
+        say so: we still want to know, and it changes where the fix comes from.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw. A screenshot of the actual window beats a description of it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered, starting from a state someone else can reach.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. The screen shows ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: From the about panel or `--version`. "Latest" is not a version.
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: macOS 15.3 arm64 / Windows 11 24H2 / Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed it
+      options:
+        - Release asset from GitHub
+        - Package manager
+        - Built from source
+        - Other or not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: fresh-profile
+    attributes:
+      label: Does it happen in a fresh profile or new workspace?
+      description: A bug that only occurs in an existing profile is a different bug. This halves the search.
+      options:
+        - Yes, it happens in a fresh one too
+        - No, only in my existing one
+        - I have not tried
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      description: Paste the text rather than a screenshot of it, so it is searchable. Remove any token or credential first.
+      render: shell
+    validations:
+      required: false

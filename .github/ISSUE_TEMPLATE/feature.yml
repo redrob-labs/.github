@@ -1,0 +1,50 @@
+name: Feature request
+description: Something the product should do and does not
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Some of these products deliberately expose one engine or one provider, and a missing
+        model picker or a missing BYOK field is usually a product decision rather than an
+        oversight. Describing the problem rather than the setting you expected helps us tell the
+        two apart.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you were trying to do, and where it stopped. The situation, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do today instead
+      description: If there is no workaround, say so. That is useful information.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including any you rejected, and why.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: upstream
+    attributes:
+      label: Upstream
+      options:
+        - label: I have checked whether upstream already does this or has an open issue for it.
+          required: false

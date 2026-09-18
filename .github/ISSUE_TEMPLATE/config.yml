@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/redrob-labs/.github/blob/main/SECURITY.md
+    about: Report privately by email. Never in a public issue.
+  - name: How to contribute
+    url: https://github.com/redrob-labs/.github/blob/main/CONTRIBUTING.md
+    about: What gets merged quickly, what needs a discussion first, and the branch rules.
+  - name: Working in a fork
+    url: https://github.com/redrob-labs/.github/blob/main/FORKS.md
+    about: Read this before your first change. Two of its rules are enforced by CI.
+  - name: Code of conduct concern
+    url: https://github.com/redrob-labs/.github/blob/main/CODE_OF_CONDUCT.md
+    about: Handled confidentially at conduct@redrob.ai.
