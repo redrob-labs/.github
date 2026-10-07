@@ -72,6 +72,17 @@ discussion may be in Korean or English, and nobody will ask you to switch.
 
 No em dashes, anywhere: commits, pull requests, code comments, documentation.
 
+Commits can be as small as you like. A fine-grained history is good: one logical step per commit
+makes a change easy to read and easy to revert. Split freely.
+
+A pull request is the opposite unit. Keep it to one thing, deduplicated and no larger than it
+needs to be. Before you open one, fold away the noise: squash the "fix typo", "oops" and
+revert-of-a-revert churn, drop a change that is already on the base branch, and leave out
+anything a reviewer would have to mentally set aside to judge the real change. A reviewer should
+be able to say in one sentence what the PR does (that sentence is the template's first line); if
+it takes more, the branch is doing more than one thing and should be two PRs. Small commits
+inside a tight, single-purpose PR is exactly the shape we want.
+
 ## Before you open a pull request
 
 Run the repository's own gates, listed in its `README.md`. They differ per repository, so read
