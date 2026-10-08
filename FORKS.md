@@ -17,6 +17,7 @@ merge.
 | `redrob-ide` | Visual Studio Code |
 | `redrob-cad` | FreeCAD |
 | `redrob-reblend` | Blender |
+| `redrob-os` | Home Assistant OS (`os/`), ZeroClaw (`agent/`) |
 
 Each repository records its own upstream and the exact point it sits on, in `UPSTREAM.md` or
 `docs/UPSTREAM.md`, with the pin in `upstream-base.json`, `UPSTREAM_VERSION` or
