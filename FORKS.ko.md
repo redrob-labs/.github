@@ -16,6 +16,7 @@ English: [FORKS.md](./FORKS.md)
 | `redrob-ide` | Visual Studio Code |
 | `redrob-cad` | FreeCAD |
 | `redrob-reblend` | Blender |
+| `redrob-os` | Home Assistant OS (`os/`), ZeroClaw (`agent/`) |
 
 각 저장소는 자기 상류와 자기가 올라앉은 정확한 지점을 `UPSTREAM.md` 또는 `docs/UPSTREAM.md` 에
 기록하고, 핀은 `upstream-base.json`, `UPSTREAM_VERSION`, `docs/upstream-sources.toml` 에 있습니다.

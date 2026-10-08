@@ -42,8 +42,8 @@ is per organization; the standards are not.
 Recorded because an unrecorded gap reads as the standard being wrong.
 
 [GITFLOW.md](https://github.com/mckinley-and-rice/.github/blob/main/docs/GITFLOW.md) makes
-`develop` the default branch. Five repositories here are still on `main`: `redrob-studio`,
-`redrob-verify`, `redrob-image`, `redrob-ide` and `redrob-labs`. Twelve are on `develop`.
+`develop` the default branch. Four repositories here are still on `main`: `redrob-studio`,
+`redrob-verify`, `redrob-image` and `redrob-labs`. Fourteen are on `develop`.
 Changing a default branch is a breaking change to CI, because a workflow filtered on
 `branches: [main]` stops running silently, so each of those five needs its workflow branch
 filters audited in the same change.
