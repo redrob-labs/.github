@@ -16,7 +16,7 @@ merge.
 | `redrob-browser` | Chromium |
 | `redrob-ide` | Visual Studio Code |
 | `redrob-cad` | FreeCAD |
-| `redrob-reblend` | Blender |
+| `redrob-shape` | Blender |
 | `redrob-os` | Home Assistant OS (`os/`), ZeroClaw (`agent/`) |
 
 Each repository records its own upstream and the exact point it sits on, in `UPSTREAM.md` or

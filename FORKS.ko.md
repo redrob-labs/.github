@@ -15,7 +15,7 @@ English: [FORKS.md](./FORKS.md)
 | `redrob-browser` | Chromium |
 | `redrob-ide` | Visual Studio Code |
 | `redrob-cad` | FreeCAD |
-| `redrob-reblend` | Blender |
+| `redrob-shape` | Blender |
 | `redrob-os` | Home Assistant OS (`os/`), ZeroClaw (`agent/`) |
 
 각 저장소는 자기 상류와 자기가 올라앉은 정확한 지점을 `UPSTREAM.md` 또는 `docs/UPSTREAM.md` 에
