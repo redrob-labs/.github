@@ -41,10 +41,10 @@ English: [README.md](./README.md)
 기록되지 않은 격차는 표준이 틀린 것으로 읽히므로 적어 둡니다.
 
 [GITFLOW.ko.md](https://github.com/mckinley-and-rice/.github/blob/main/docs/GITFLOW.ko.md) 는
-`develop` 을 기본 브랜치로 삼습니다. 여기 저장소 다섯 개가 아직 `main` 입니다. `redrob-studio`,
-`redrob-verify`, `redrob-image`, `redrob-ide`, `redrob-labs`. 열두 개는 `develop` 입니다. 기본
+`develop` 을 기본 브랜치로 삼습니다. 여기 저장소 네 개가 아직 `main` 입니다. `redrob-studio`,
+`redrob-verify`, `redrob-image`, `redrob-labs`. 열네 개는 `develop` 입니다. 기본
 브랜치를 바꾸는 것은 CI에 대한 브레이킹 체인지입니다. `branches: [main]` 로 필터된 워크플로가 조용히
-돌기를 멈추기 때문입니다. 그래서 그 다섯 개는 각각 같은 변경 안에서 워크플로 브랜치 필터를 전수
+돌기를 멈추기 때문입니다. 그래서 그 네 개는 각각 같은 변경 안에서 워크플로 브랜치 필터를 전수
 점검해야 합니다.
 
 공개 저장소 세 개가 GitHub가 분류할 수 없는 라이선스를 출하하고 있어 사이드바에 라이선스가 아예
