@@ -1,0 +1,148 @@
+# Pull request policy shared by every redrob-labs repository.
+#
+# Two rules, both enforced by closing or un-requesting rather than by failing a check, so they
+# cannot be ignored:
+#
+#   1. Open-PR cap. An author keeps at most `cap` open pull requests per repository. The oldest
+#      `cap` stay; any newer one is closed with a comment the moment it is opened or reopened.
+#   2. Review-request gate. A review may be requested from a maintainer in `gated_reviewers` only
+#      after the author has reviewed their own pull request (one review of any state on their own
+#      PR) and has no unchecked box left in the description. Otherwise the request is removed and
+#      one comment, updated in place, says what is missing.
+#
+# Logins in `exempt` are never limited or gated.
+#
+# Called from a repository through `pull_request_target`, so it runs the base branch's copy and
+# the token can write to the base repository even for forks. Callers must grant
+# `pull-requests: write`.
+
+name: PR policy
+
+on:
+  workflow_call:
+    inputs:
+      cap:
+        description: Maximum open pull requests per author in this repository
+        type: number
+        default: 3
+      exempt:
+        description: Space-separated logins never limited or gated
+        type: string
+        default: "its-janghoon dependabot[bot]"
+      gated_reviewers:
+        description: Space-separated logins whose review may only be requested after a self-review
+        type: string
+        default: "its-janghoon"
+
+permissions:
+  pull-requests: write
+
+jobs:
+  policy:
+    name: Enforce
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+      - name: Enforce the open-PR cap and the review-request gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ACTION: ${{ github.event.action }}
+          PR: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          REQUESTED: ${{ github.event.requested_reviewer.login }}
+          CAP: ${{ inputs.cap }}
+          EXEMPT: ${{ inputs.exempt }}
+          GATED: ${{ inputs.gated_reviewers }}
+        run: |
+          set -euo pipefail
+
+          has() { local x; for x in $2; do [ "$x" = "$1" ] && return 0; done; return 1; }
+
+          if has "$AUTHOR" "$EXEMPT"; then
+            echo "$AUTHOR is exempt; nothing to enforce."
+            exit 0
+          fi
+
+          case "$ACTION" in
+            opened|reopened)
+              # Rank this PR among the author's open PRs by number. The oldest $CAP keep their
+              # place; anything ranked at or past the cap is closed. Ranking (rather than a plain
+              # count) keeps a burst of simultaneous openings from closing all of them.
+              numbers=$(gh pr list -R "$REPO" --author "$AUTHOR" --state open --limit 200 \
+                --json number --jq 'sort_by(.number)[].number')
+              mapfile -t open < <(printf '%s\n' "$numbers")
+              rank=-1; i=0
+              for n in "${open[@]}"; do
+                [ "$n" = "$PR" ] && rank=$i
+                i=$((i + 1))
+              done
+              echo "$AUTHOR has ${#open[@]} open PR(s); #$PR ranks $rank, cap $CAP."
+              if [ "$rank" -lt 0 ]; then
+                echo "::error::#$PR is not in the author's open list; refusing to guess." >&2
+                exit 1
+              fi
+              if [ "$rank" -lt "$CAP" ]; then
+                echo "Within the cap."
+                exit 0
+              fi
+              keep=$(printf '#%s, ' "${open[@]:0:$CAP}"); keep=${keep%, }
+              msg="<!-- pr-policy:cap -->
+          Closed by the pull request policy: an author keeps at most **$CAP** open pull requests in this repository, and you already have $keep open.
+
+          Land or close one of those, then reopen this one. Folding related branches into one of the open pull requests is usually the faster route."
+              gh pr close -R "$REPO" "$PR" --comment "$msg"
+              ;;
+
+            review_requested)
+              if [ -z "$REQUESTED" ]; then
+                echo "A team was requested, not a person; nothing to gate."
+                exit 0
+              fi
+              if ! has "$REQUESTED" "$GATED"; then
+                echo "$REQUESTED is not a gated reviewer."
+                exit 0
+              fi
+
+              self_reviews=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+                --jq ".[] | select(.user.login == \"$AUTHOR\") | .id" | wc -l)
+              body=$(gh pr view -R "$REPO" "$PR" --json body --jq .body)
+              unchecked=$(printf '%s\n' "$body" | grep -c -E '^[[:space:]]*[-*] \[ \]' || true)
+              echo "self reviews: $self_reviews, unchecked boxes: $unchecked"
+
+              missing=""
+              if [ "$self_reviews" -eq 0 ]; then
+                missing="$missing
+          - a review of your own pull request (**Files changed → Review changes → Comment**). Read the diff the way a reviewer would, and leave the notes you would want answered;"
+              fi
+              if [ "$unchecked" -gt 0 ]; then
+                missing="$missing
+          - $unchecked unchecked box(es) in the description. Tick each one you have actually done; delete the line if it does not apply."
+              fi
+              if [ -z "$missing" ]; then
+                echo "Self-review done; the request to $REQUESTED stands."
+                exit 0
+              fi
+
+              gh api -X DELETE "repos/$REPO/pulls/$PR/requested_reviewers" -f "reviewers[]=$REQUESTED" >/dev/null
+              echo "Removed the review request to $REQUESTED."
+
+              marker='<!-- pr-policy:review-gate -->'
+              msg="$marker
+          Review request to @$REQUESTED removed by the pull request policy. Before asking a maintainer to review, finish your own review. Still missing:
+          $missing
+
+          Request the review again once both are done."
+              existing=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+                --jq ".[] | select(.user.type == \"Bot\") | select(.body | startswith(\"$marker\")) | .id" | head -n1)
+              if [ -n "$existing" ]; then
+                gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$msg" >/dev/null
+              else
+                gh api -X POST "repos/$REPO/issues/$PR/comments" -f body="$msg" >/dev/null
+              fi
+              ;;
+
+            *)
+              echo "No rule for action '$ACTION'."
+              ;;
+          esac

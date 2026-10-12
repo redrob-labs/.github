@@ -1,0 +1,14 @@
+# Pull request policy for this repository. The reusable workflow itself is .github/workflows/pr-policy.yml.
+
+name: PR policy
+
+on:
+  pull_request_target:
+    types: [opened, reopened, review_requested]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  policy:
+    uses: redrob-labs/.github/.github/workflows/pr-policy.yml@main

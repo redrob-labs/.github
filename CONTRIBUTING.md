@@ -119,6 +119,16 @@ has shipped an invisible label and a control that did nothing.
 
 ## Reviews and merging
 
+Two rules are enforced by a workflow in every repository, not by a check you can leave red:
+
+- **At most three open pull requests per author, per repository.** The oldest three stay; a
+  newer one is closed on opening with a comment. Land or close one, then reopen. If several
+  branches belong together, they are one pull request.
+- **Review your own pull request before asking a maintainer to.** A review request to a
+  maintainer is removed until you have left a review on your own pull request (Files changed →
+  Review changes → Comment) and no box in the description is left unchecked. Tick what you did;
+  delete a line that does not apply. Then request the review again.
+
 A pull request needs its checks green and a maintainer merge. Merge style is not a preference,
 because it changes what the next merge can do:
 
