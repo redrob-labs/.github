@@ -1,0 +1,148 @@
+# Release -- the redrob-labs shape. Copy this file, replace the BUILD steps, keep the skeleton.
+#
+#   tag v<version> on main  ->  version  ->  macos / windows / linux (build, then sign)  ->  publish
+#
+# The parts every repository shares are not in this file; they are called:
+#   - redrob-labs/.github/actions/sign-windows          Authenticode through Azure Artifact Signing
+#   - redrob-labs/.github/.github/workflows/release-publish.yml   checksums, launcher manifest, release
+#
+# Rules the skeleton encodes:
+#   - the trigger is the tag push; `workflow_dispatch` with a version is a DRY RUN (no release);
+#   - Windows: build, THEN `azure/login` (OIDC), THEN sign -- the login token is short-lived and the
+#     build is long; never the other way round, never a client secret or a certificate file;
+#   - signing jobs run in the `release` environment with `id-token: write`;
+#   - the publish job runs only on a tag and only when every build job succeeded;
+#   - the release is published as latest unless the version carries a pre-release suffix.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version for a dry run, e.g. 0.2.0-rc.1 (builds and signs, publishes nothing)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  PRODUCT: Redrob Example                                   # <- product name (release title, signature /d)
+  PRODUCT_URL: https://github.com/${{ github.repository }}
+
+jobs:
+  version:
+    name: Resolve the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE:-}" = tag ]; then
+            v="${GITHUB_REF_NAME#v}"
+          elif [ -n "$INPUT_VERSION" ]; then
+            v="$INPUT_VERSION"
+          else
+            echo "::error::not a tag push and no version input"; exit 1
+          fi
+          # <- compare `v` with the version the sources declare (Cargo.toml, package.json, VERSION) and fail on a mismatch
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+  windows:
+    name: Windows x64
+    needs: version
+    runs-on: windows-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (unsigned)
+        shell: pwsh
+        run: |
+          # <- build the executables into dist/ ; do NOT package the installer yet
+          echo build
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Sign the executables
+        uses: redrob-labs/.github/actions/sign-windows@main
+        with:
+          files: dist/*.exe
+          description: ${{ env.PRODUCT }}
+          url: ${{ env.PRODUCT_URL }}
+          endpoint: ${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}
+          account: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}
+          cert-profile: ${{ secrets.ARTIFACT_SIGNING_CERT_PROFILE }}
+      - name: Package the installer
+        shell: pwsh
+        run: echo package   # <- WiX / NSIS / electron-builder --prepackaged, from the signed executables
+      - name: Sign the installer
+        uses: redrob-labs/.github/actions/sign-windows@main
+        with:
+          files: |
+            dist/release/*.msi
+            dist/release/*-setup.exe
+          description: ${{ env.PRODUCT }}
+          url: ${{ env.PRODUCT_URL }}
+          endpoint: ${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}
+          account: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}
+          cert-profile: ${{ secrets.ARTIFACT_SIGNING_CERT_PROFILE }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows-x64
+          path: dist/release/*
+          if-no-files-found: error
+
+  macos:
+    name: macOS arm64
+    needs: version
+    runs-on: macos-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, sign, notarize
+        run: echo build   # <- the repository's own Developer ID + notarytool steps
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos-arm64
+          path: dist/release/*
+          if-no-files-found: error
+
+  linux:
+    name: Linux x64
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and package
+        run: echo build   # <- AppImage / deb / rpm / tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-linux-x64
+          path: dist/release/*
+          if-no-files-found: error
+
+  publish:
+    needs: [version, windows, macos, linux]
+    if: always() && github.ref_type == 'tag' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped')
+    uses: redrob-labs/.github/.github/workflows/release-publish.yml@main
+    permissions:
+      contents: write
+    with:
+      version: ${{ needs.version.outputs.version }}
+      title: Redrob Example                                  # <- product name
+      launcher_manifest: true                                # <- false when the app does not read the launcher's shared sign-in
+      publish: true

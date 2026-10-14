@@ -47,9 +47,9 @@ chore/bump-electron
 docs/upstream-sync
 ```
 
-The allowed type list is **per repository**, held in that repository's
-`.github/workflows/gitflow.yml` as `ALLOWED_TYPES`. Read it before you name a branch: some use
-`feat`, others use `feature`, and the check fails a branch that guessed. A branch name says
+The allowed type list is **one list for every redrob-labs repository**, held in
+[`.github/workflows/gitflow.yml`](.github/workflows/gitflow.yml) in this repository and called
+from each one: `feat fix chore docs test refactor perf ci build sync hotfix release`. A branch name says
 what the change is, never who or what produced it, so an agent or tool name is not a type.
 
 The full model, including how upstream syncs and releases work, is in
