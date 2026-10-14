@@ -32,6 +32,11 @@
 #
 # With the three signing inputs empty the action warns and leaves the files unsigned (a dry run on a
 # fork still produces installers); half-configured it fails.
+#
+# When a bundler must sign in the middle of its own packaging (tauri's `bundle.windows.signCommand`,
+# electron-builder's `win.sign` hook), check this repository out and point the bundler at
+# `actions/sign-windows/sign.ps1 <file>` with ARTIFACT_SIGNING_* in the environment -- same recipe,
+# same copy, no fork of it in the app repository.
 
 name: Sign Windows files (Azure Artifact Signing)
 description: Authenticode-sign and verify files with Azure Artifact Signing through the job's OIDC login
