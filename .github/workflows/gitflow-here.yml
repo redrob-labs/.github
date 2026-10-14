@@ -1,4 +1,5 @@
-# Gitflow rules for this repository. The reusable workflow itself is .github/workflows/gitflow.yml.
+# Gitflow rules for this repository. Calls the reusable workflow beside it by path, so a pull request
+# that changes the rules is checked by its own version of them.
 
 name: gitflow
 
@@ -15,4 +16,4 @@ permissions:
 
 jobs:
   gitflow:
-    uses: redrob-labs/.github/.github/workflows/gitflow.yml@main
+    uses: ./.github/workflows/gitflow.yml
