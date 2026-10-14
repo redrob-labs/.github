@@ -11,8 +11,25 @@
 
   With the three ARTIFACT_SIGNING_* variables unset it warns and leaves the files unsigned (exit 0),
   so a dry run on a fork still produces installers. Half-configured, it fails.
+
+  Also usable directly as a bundler's sign command, so tauri (`bundle.windows.signCommand`) and
+  electron-builder (`win.sign` hook) call this same copy instead of carrying their own:
+
+    pwsh -NoProfile -File <checkout>/actions/sign-windows/sign.ps1 <file> [<file>...]
+
+  Files given as arguments win over SIGN_FILES. SIGN_DESCRIPTION defaults to the repository name
+  and SIGN_URL to the repository's GitHub URL when GITHUB_REPOSITORY is set.
 #>
+param(
+  [Parameter(ValueFromRemainingArguments = $true)]
+  [string[]] $FileArgs = @()
+)
 $ErrorActionPreference = 'Stop'
+
+if (-not $env:SIGN_DESCRIPTION -and $env:GITHUB_REPOSITORY) { $env:SIGN_DESCRIPTION = ($env:GITHUB_REPOSITORY -split '/')[-1] }
+if (-not $env:SIGN_URL -and $env:GITHUB_REPOSITORY) { $env:SIGN_URL = "https://github.com/$env:GITHUB_REPOSITORY" }
+if (-not $env:SIGN_DESCRIPTION) { throw 'SIGN_DESCRIPTION is not set' }
+if (-not $env:SIGN_URL) { throw 'SIGN_URL is not set' }
 
 function Write-Warn([string] $Message) {
   if ($env:GITHUB_ACTIONS) { Write-Output "::warning::$Message" } else { Write-Warning $Message }
@@ -36,8 +53,8 @@ function Invoke-SignTool([string[]] $Arguments) {
 }
 
 # Expand the file list: one entry per line or per whitespace run, globs resolved, duplicates dropped.
-$patterns = @(($env:SIGN_FILES -split '[\r\n\s]+') | Where-Object { $_ })
-if ($patterns.Count -eq 0) { throw 'SIGN_FILES is empty' }
+$patterns = if ($FileArgs.Count -gt 0) { @($FileArgs) } else { @(($env:SIGN_FILES -split '[\r\n\s]+') | Where-Object { $_ }) }
+if ($patterns.Count -eq 0) { throw 'no files: pass them as arguments or in SIGN_FILES' }
 $Files = @()
 foreach ($pattern in $patterns) {
   $matched = @(Get-Item -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
