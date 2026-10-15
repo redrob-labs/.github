@@ -1,0 +1,164 @@
+# Publish a GitHub release from build artifacts -- the one copy for redrob-labs.
+#
+# Every app's release workflow ends the same way: download the per-platform artifacts, write
+# SHA256SUMS, write the Redrob Launcher manifest, create or update the release. Three repositories
+# drafted, three published, one left the human to click Publish. This job does it one way:
+#
+#   - artifacts named `<artifact_prefix>*` are merged into one directory;
+#   - `SHA256SUMS.txt` is written over all of them;
+#   - `redrob-launcher.json` (`{ "schema": 1, "sharedAccount": true }`) is added when the app reads
+#     the launcher's shared sign-in (redrob-launcher docs/release-manifest.md, schema 1);
+#   - the release `v<version>` is created, or an existing DRAFT is refreshed (assets replaced);
+#     an already PUBLISHED release is never overwritten -- bump and tag again;
+#   - `publish: true` publishes it as latest (prerelease when the version has a `-`),
+#     `publish: false` leaves a draft for a human to read and publish.
+#
+# Call it as the last job of a release workflow:
+#
+#   publish:
+#     needs: [version, macos, windows, linux]
+#     if: always() && github.ref_type == 'tag' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+#     uses: redrob-labs/.github/.github/workflows/release-publish.yml@main
+#     with:
+#       version: ${{ needs.version.outputs.version }}
+#       title: Redrob Foo
+#       launcher_manifest: true
+#       publish: true
+#
+# The caller's `permissions` must include `contents: write`; the job runs in the `release` environment
+# so its protection rules (required reviewers, branch filter) apply here too.
+
+name: release-publish
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version without the leading v, e.g. 0.6.4 or 0.7.0-rc.1
+        type: string
+        required: true
+      title:
+        description: Product name; the release title is "<title> v<version>"
+        type: string
+        required: true
+      artifact_prefix:
+        description: Artifacts whose name starts with this are collected
+        type: string
+        default: release-
+      launcher_manifest:
+        description: Attach redrob-launcher.json (the app reads the launcher's shared sign-in)
+        type: boolean
+        default: true
+      publish:
+        description: Publish immediately (true) or leave a draft (false)
+        type: boolean
+        default: true
+      prerelease:
+        description: Force the prerelease flag; empty derives it from the version (a `-` means prerelease)
+        type: string
+        default: ""
+      tag:
+        description: Tag to release; empty means v<version>
+        type: string
+        default: ""
+      target:
+        description: Commit the tag must point at; empty means the calling workflow's sha
+        type: string
+        default: ""
+    outputs:
+      url:
+        description: The release URL
+        value: ${{ jobs.publish.outputs.url }}
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    outputs:
+      url: ${{ steps.release.outputs.url }}
+    env:
+      VERSION: ${{ inputs.version }}
+      TITLE: ${{ inputs.title }}
+      TAG: ${{ inputs.tag != '' && inputs.tag || format('v{0}', inputs.version) }}
+      TARGET: ${{ inputs.target != '' && inputs.target || github.sha }}
+      PUBLISH: ${{ inputs.publish }}
+      PRERELEASE_INPUT: ${{ inputs.prerelease }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.artifact_prefix }}*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Launcher manifest
+        if: inputs.launcher_manifest
+        working-directory: artifacts
+        run: |
+          printf '{ "schema": 1, "sharedAccount": true }\n' > redrob-launcher.json
+
+      - name: Checksums
+        working-directory: artifacts
+        run: |
+          set -euo pipefail
+          rm -f SHA256SUMS.txt SHA256SUMS
+          [ -n "$(ls -A)" ] || { echo "::error::no artifacts matched '${{ inputs.artifact_prefix }}*'"; exit 1; }
+          sha256sum -- * | tee SHA256SUMS.txt
+
+      - name: Create or update the release
+        id: release
+        working-directory: artifacts
+        run: |
+          set -euo pipefail
+          title="$TITLE v$VERSION"
+          case "$PRERELEASE_INPUT" in
+            true|false) pre="$PRERELEASE_INPUT" ;;
+            *) case "$VERSION" in *-*) pre=true ;; *) pre=false ;; esac ;;
+          esac
+          flags=(--title "$title" --target "$TARGET")
+          if [ "$PUBLISH" = true ]; then
+            flags+=(--draft=false)
+            [ "$pre" = true ] && flags+=(--prerelease) || flags+=(--latest)
+          else
+            flags+=(--draft)
+            [ "$pre" = true ] && flags+=(--prerelease)
+          fi
+
+          if existing="$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null)"; then
+            if [ "$existing" != "true" ]; then
+              echo "::error::Release $TAG is already published. Bump the version and tag again."
+              exit 1
+            fi
+            echo "Refreshing draft $TAG: replacing its assets"
+            gh release view "$TAG" --json assets --jq '.assets[].name' | while read -r asset; do
+              gh release delete-asset "$TAG" "$asset" --yes
+            done
+            gh release upload "$TAG" --clobber -- *
+            gh release edit "$TAG" "${flags[@]}"
+          else
+            echo "Creating $TAG (publish=$PUBLISH prerelease=$pre)"
+            gh release create "$TAG" --generate-notes "${flags[@]}" -- *
+          fi
+
+          url="$(gh release view "$TAG" --json url --jq .url)"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          {
+            echo "Release **$title** at \`${TARGET::9}\` ($([ "$PUBLISH" = true ] && echo published || echo draft)): $url"
+            echo
+            sed 's/^/    /' SHA256SUMS.txt
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check the release
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --json isDraft,isPrerelease,assets \
+            --jq '"draft=\(.isDraft) prerelease=\(.isPrerelease) assets=\(.assets|length)"'
+          want_draft=$([ "$PUBLISH" = true ] && echo false || echo true)
+          [ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" = "$want_draft" ] || { echo "::error::draft flag did not land"; exit 1; }
