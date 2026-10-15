@@ -125,11 +125,12 @@ Two rules are enforced by a workflow in every repository, not by a check you can
   newer one is closed on opening with a comment. Land or close one, then reopen. If several
   branches belong together, they are one pull request.
 - **Review your own pull request before asking a maintainer to.** A review request to a
-  maintainer is removed until you have left a real review on your own pull request (Files changed →
-  Review changes → Comment): at least one inline comment on the diff pointing at what a reviewer
-  should look at first, a summary of at least 100 characters saying what you checked and what you
-  are unsure about, and no box in the description left unchecked. Tick what you did; delete a line
-  that does not apply. Then request the review again.
+  maintainer is removed until you have left one whole-PR comment of at least 100 characters on
+  your own pull request (a review summary via Files changed → Review changes → Comment, or a plain
+  comment in the Conversation tab) saying what you checked, what you did not, and what you are
+  unsure about, and until every section of the description template (What's done, What's not
+  done, What to review, Intentions) has something under it. Inline comments on the diff are
+  welcome but not required. Then request the review again.
 
 A pull request needs its checks green and a maintainer merge. Merge style is not a preference,
 because it changes what the next merge can do:

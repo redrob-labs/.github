@@ -1,34 +1,28 @@
-## What this changes
+## What's done
 
-<!-- One sentence a reviewer can repeat back. If it takes more, the branch is doing more than
-one thing. -->
+<!-- What this pull request finishes, as a reviewer would repeat it back. One sentence is the
+right size; if it takes a paragraph, the branch is doing more than one thing. Name the command
+you ran or the screen you looked at, and what it said. A green build is not verification of
+anything a user sees. -->
 
-## Why
+## What's not done
 
-<!-- What was wrong, and why this is the right shape of fix. Not what the diff already shows.
-If the cause was somewhere other than where the symptom appeared, say so. -->
+<!-- What is left out on purpose, what is known to be broken, what you could not verify. Write
+"nothing" if that is the honest answer. A reviewer who finds a gap you already knew about has
+wasted a round. -->
 
-## How it was verified
+## What to review
 
-<!-- Name the command you ran or the screen you looked at, and what it said. A green build is not
-verification of anything a user sees: run it and look at it.
+<!-- Where to look first: the decision you are unsure about, the tradeoff you made, the file that
+looks worse than it is. Point at files and lines. -->
 
-Any count, size, version or timing in this description is re-measured from the built artifact. -->
+## Intentions
 
-- [ ] The repository's own gates pass locally
-- [ ] Verified against the built artifact, not only the diff
-- [ ] No credential, token or `.env` file in the diff
-- [ ] User-facing strings go through the translation layer, in both locale tables
+<!-- Why this change, and why this shape of fix rather than another. Not what the diff already
+shows. If the cause was somewhere other than where the symptom appeared, say so. If this is one
+step of a larger plan, say what comes next. -->
 
-If this repository is a fork:
-
-- [ ] No upstream copyright notice was replaced
-- [ ] Nothing was added under a subtree upstream licenses separately
-- [ ] No upstream identifier was renamed as part of a rebrand (config directory names, error
-      codes, published package names, upstream resource strings)
-- [ ] An upstream sync is a merge commit, not a squash
-
-## Anything a reviewer should look at first
-
-<!-- A decision you are unsure about, a tradeoff you made, a file that looks worse than it is.
-Delete this section if there is nothing. -->
+<!-- In a fork: no upstream copyright notice replaced, nothing added under a subtree upstream
+licenses separately, no upstream identifier renamed as part of a rebrand, and an upstream sync is
+a merge commit, not a squash. No credential, token or .env file in the diff. User-facing strings go
+through the translation layer, in both locale tables. -->

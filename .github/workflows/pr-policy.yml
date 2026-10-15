@@ -6,10 +6,11 @@
 #   1. Open-PR cap. An author keeps at most `cap` open pull requests per repository. The oldest
 #      `cap` stay; any newer one is closed with a comment the moment it is opened or reopened.
 #   2. Review-request gate. A review may be requested from a maintainer in `gated_reviewers` only
-#      after the author has reviewed their own pull request substantively -- a review with at
-#      least `min_inline_comments` inline comments on the diff and a summary of at least
-#      `min_review_body` characters -- and has no unchecked box left in the description.
-#      Otherwise the request is removed and one comment, updated in place, says what is missing.
+#      after the author has reviewed their own pull request: one whole-PR comment (a review
+#      summary or a plain conversation comment) of at least `min_review_body` characters, and a
+#      description with every section of the template filled in. Inline diff comments are welcome
+#      but not required. Otherwise the request is removed and one comment, updated in place, says
+#      what is missing.
 #
 # Logins in `exempt` are never limited or gated.
 #
@@ -34,14 +35,14 @@ on:
         description: Space-separated logins whose review may only be requested after a self-review
         type: string
         default: "its-janghoon"
-      min_inline_comments:
-        description: Inline diff comments the author must leave in their self-review
-        type: number
-        default: 1
       min_review_body:
-        description: Minimum length, in characters, of the author's self-review summary
+        description: Minimum length, in characters, of the author's self-review comment
         type: number
         default: 100
+      sections:
+        description: Pipe-separated headings the description must fill in (empty to skip)
+        type: string
+        default: "What's done|What's not done|What to review|Intentions"
 
 permissions:
   pull-requests: write
@@ -63,8 +64,8 @@ jobs:
           CAP: ${{ inputs.cap }}
           EXEMPT: ${{ inputs.exempt }}
           GATED: ${{ inputs.gated_reviewers }}
-          MIN_INLINE: ${{ inputs.min_inline_comments }}
           MIN_BODY: ${{ inputs.min_review_body }}
+          SECTIONS: ${{ inputs.sections }}
         run: |
           set -euo pipefail
 
@@ -115,36 +116,44 @@ jobs:
                 exit 0
               fi
 
-              # A self-review counts only when it is substantive: at least $MIN_INLINE inline
-              # comment(s) on the diff and a review summary of at least $MIN_BODY characters.
-              # GitHub does not let an author approve their own pull request, so the review
-              # state is not checked.
-              self_reviews=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
-                --jq ".[] | select(.user.login == \"$AUTHOR\") | .id" | wc -l)
-              inline=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" \
-                --jq ".[] | select(.user.login == \"$AUTHOR\") | .id" | wc -l)
-              longest=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+              # A self-review is one whole-PR comment by the author of at least $MIN_BODY
+              # characters: either the summary of a review (Files changed → Review changes →
+              # Comment) or a plain comment in the Conversation tab. Inline diff comments are not
+              # required. GitHub does not let an author approve their own pull request, so the
+              # review state is not checked. The policy's own comments are posted by a bot, so
+              # they never count.
+              longest_review=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
                 --jq "[.[] | select(.user.login == \"$AUTHOR\") | (.body // \"\" | length)] | max // 0")
+              longest_comment=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+                --jq "[.[] | select(.user.login == \"$AUTHOR\") | (.body // \"\" | length)] | max // 0")
+              longest=$(( longest_review > longest_comment ? longest_review : longest_comment ))
+
+              # Every section of the template must have something under it that is not an HTML
+              # comment. The section list is configurable; an empty list skips the check.
               body=$(gh pr view -R "$REPO" "$PR" --json body --jq .body)
-              unchecked=$(printf '%s\n' "$body" | grep -c -E '^[[:space:]]*[-*] \[ \]' || true)
-              echo "self reviews: $self_reviews, inline comments: $inline, longest summary: $longest, unchecked boxes: $unchecked"
+              empty=""
+              if [ -n "$SECTIONS" ]; then
+                IFS='|' read -r -a headings <<< "$SECTIONS"
+                for h in "${headings[@]}"; do
+                  content=$(printf '%s\n' "$body" | awk -v h="$h" '
+                    BEGIN { on = 0 }
+                    /^##[[:space:]]/ { on = (tolower(substr($0, 4)) ~ "^[[:space:]]*" tolower(h) "[[:space:]]*$"); next }
+                    on { print }' | sed -E 's/<!--.*-->//g; /<!--/,/-->/d' | tr -d '[:space:]')
+                  if [ -z "$content" ]; then
+                    empty="$empty $h;"
+                  fi
+                done
+              fi
+              echo "longest self comment: $longest (review $longest_review, conversation $longest_comment); empty sections:${empty:- none}"
 
               missing=""
-              if [ "$self_reviews" -eq 0 ]; then
-                missing="$missing
-          - a review of your own pull request (**Files changed → Review changes → Comment**). Read the diff the way a reviewer would, and leave the notes you would want answered;"
-              fi
-              if [ "$inline" -lt "$MIN_INLINE" ]; then
-                missing="$missing
-          - at least $MIN_INLINE inline comment(s) on the diff itself (you have $inline). Point at the lines a reviewer should look at first and say why;"
-              fi
               if [ "$longest" -lt "$MIN_BODY" ]; then
                 missing="$missing
-          - a review summary of at least $MIN_BODY characters (your longest is $longest). Say what you checked, what you did not, and what you are unsure about;"
+          - a comment on your own pull request of at least $MIN_BODY characters (your longest is $longest): a review summary (**Files changed → Review changes → Comment**) or a plain comment in the Conversation tab. Read the diff the way a reviewer would, and say what you checked, what you did not, and what you are unsure about;"
               fi
-              if [ "$unchecked" -gt 0 ]; then
+              if [ -n "$empty" ]; then
                 missing="$missing
-          - $unchecked unchecked box(es) in the description. Tick each one you have actually done; delete the line if it does not apply."
+          - these sections of the description are empty:$empty fill each one in (write \"nothing\" if that is the honest answer)."
               fi
               if [ -z "$missing" ]; then
                 echo "Self-review done; the request to $REQUESTED stands."
@@ -159,7 +168,7 @@ jobs:
           Review request to @$REQUESTED removed by the pull request policy. Before asking a maintainer to review, finish your own review. Still missing:
           $missing
 
-          Request the review again once both are done."
+          Request the review again once everything above is done."
               existing=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
                 --jq ".[] | select(.user.type == \"Bot\") | select(.body | startswith(\"$marker\")) | .id" | head -n1)
               if [ -n "$existing" ]; then
