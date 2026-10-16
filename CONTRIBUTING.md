@@ -47,9 +47,9 @@ chore/bump-electron
 docs/upstream-sync
 ```
 
-The allowed type list is **per repository**, held in that repository's
-`.github/workflows/gitflow.yml` as `ALLOWED_TYPES`. Read it before you name a branch: some use
-`feat`, others use `feature`, and the check fails a branch that guessed. A branch name says
+The allowed type list is **one list for every redrob-labs repository**, held in
+[`.github/workflows/gitflow.yml`](.github/workflows/gitflow.yml) in this repository and called
+from each one: `feat fix chore docs test refactor perf ci build sync hotfix release`. A branch name says
 what the change is, never who or what produced it, so an agent or tool name is not a type.
 
 The full model, including how upstream syncs and releases work, is in
@@ -118,6 +118,19 @@ them from memory, and verify by looking at the built screen rather than the diff
 has shipped an invisible label and a control that did nothing.
 
 ## Reviews and merging
+
+Two rules are enforced by a workflow in every repository, not by a check you can leave red:
+
+- **At most three open pull requests per author, per repository.** The oldest three stay; a
+  newer one is closed on opening with a comment. Land or close one, then reopen. If several
+  branches belong together, they are one pull request.
+- **Review your own pull request before asking a maintainer to.** A review request to a
+  maintainer is removed until you have left one whole-PR comment of at least 100 characters on
+  your own pull request (a review summary via Files changed → Review changes → Comment, or a plain
+  comment in the Conversation tab) saying what you checked, what you did not, and what you are
+  unsure about, and until every section of the description template (What's done, What's not
+  done, What to review, Intentions) has something under it. Inline comments on the diff are
+  welcome but not required. Then request the review again.
 
 A pull request needs its checks green and a maintainer merge. Merge style is not a preference,
 because it changes what the next merge can do:

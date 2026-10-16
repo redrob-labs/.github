@@ -1,0 +1,6 @@
+{
+  "name": "PR policy (open-PR cap and self-review gate)",
+  "description": "Closes a pull request beyond the author's cap of 3 open ones, and removes a review request to a maintainer until the author has left a whole-PR self-review comment and filled in every section of the description.",
+  "iconName": "octicon shield-check",
+  "categories": ["Continuous integration"]
+}

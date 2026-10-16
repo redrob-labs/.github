@@ -1,0 +1,19 @@
+# Gitflow rules for this repository. Calls the reusable workflow beside it by path, so a pull request
+# that changes the rules is checked by its own version of them.
+
+name: gitflow
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  gitflow:
+    uses: ./.github/workflows/gitflow.yml
