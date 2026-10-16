@@ -145,4 +145,5 @@ jobs:
       version: ${{ needs.version.outputs.version }}
       title: Redrob Example                                  # <- product name
       launcher_manifest: true                                # <- false when the app does not read the launcher's shared sign-in
+      launcher_icon: redrob-example.png                      # <- a square PNG one of the jobs above uploaded among release-*; omit for none
       publish: true
