@@ -7,7 +7,9 @@
 #   - artifacts named `<artifact_prefix>*` are merged into one directory;
 #   - `SHA256SUMS.txt` is written over all of them;
 #   - `redrob-launcher.json` (`{ "schema": 1, "sharedAccount": true }`) is added when the app reads
-#     the launcher's shared sign-in (redrob-launcher docs/release-manifest.md, schema 1);
+#     the launcher's shared sign-in (redrob-launcher docs/release-manifest.md, schema 1); with
+#     `launcher_icon: redrob-foo.png` it also carries `"icon": "redrob-foo.png"`, naming a square PNG
+#     the caller uploaded among the artifacts, so the launcher's catalog shows the product's own logo;
 #   - the release `v<version>` is created, or an existing DRAFT is refreshed (assets replaced);
 #     an already PUBLISHED release is never overwritten -- bump and tag again;
 #   - `publish: true` publishes it as latest (prerelease when the version has a `-`),
@@ -23,6 +25,7 @@
 #       version: ${{ needs.version.outputs.version }}
 #       title: Redrob Foo
 #       launcher_manifest: true
+#       launcher_icon: redrob-foo.png   # a PNG among the release-* artifacts; omit for no icon
 #       publish: true
 #
 # The caller's `permissions` must include `contents: write`; the job runs in the `release` environment
@@ -49,6 +52,13 @@ on:
         description: Attach redrob-launcher.json (the app reads the launcher's shared sign-in)
         type: boolean
         default: true
+      launcher_icon:
+        description: >-
+          Name of a square PNG (256 px or more, under 1 MiB) among the collected artifacts, written
+          into redrob-launcher.json as `icon` so Redrob Launcher shows this release's own logo.
+          Empty means no icon field.
+        type: string
+        default: ""
       publish:
         description: Publish immediately (true) or leave a draft (false)
         type: boolean
@@ -101,8 +111,25 @@ jobs:
       - name: Launcher manifest
         if: inputs.launcher_manifest
         working-directory: artifacts
+        env:
+          ICON: ${{ inputs.launcher_icon }}
         run: |
-          printf '{ "schema": 1, "sharedAccount": true }\n' > redrob-launcher.json
+          set -euo pipefail
+          if [ -z "$ICON" ]; then
+            printf '{ "schema": 1, "sharedAccount": true }\n' > redrob-launcher.json
+            exit 0
+          fi
+          # The icon must be one more asset of this very release: a square PNG the launcher can
+          # show (docs/release-manifest.md in redrob-launcher). Anything else and the launcher
+          # would silently keep its built-in icon, so fail here instead.
+          case "$ICON" in *.png) ;; *) echo "::error::launcher_icon '$ICON' is not a .png"; exit 1 ;; esac
+          [ -f "$ICON" ] || { echo "::error::launcher_icon '$ICON' is not among the artifacts"; exit 1; }
+          [ "$(head -c 8 -- "$ICON" | od -An -tx1 | tr -d ' \n')" = "89504e470d0a1a0a" ] || { echo "::error::$ICON is not a PNG"; exit 1; }
+          [ "$(stat -c %s -- "$ICON")" -lt 1048576 ] || { echo "::error::$ICON is 1 MiB or more"; exit 1; }
+          read -r w h < <(python3 -c 'import struct,sys;d=open(sys.argv[1],"rb").read(24);print(*struct.unpack(">II",d[16:24]))' "$ICON")
+          [ "$w" = "$h" ] && [ "$w" -ge 256 ] || { echo "::error::$ICON is ${w}x${h}; the launcher icon must be square and at least 256 px"; exit 1; }
+          printf '{ "schema": 1, "sharedAccount": true, "icon": "%s" }\n' "$ICON" > redrob-launcher.json
+          cat redrob-launcher.json
 
       - name: Checksums
         working-directory: artifacts
