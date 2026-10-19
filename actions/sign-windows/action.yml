@@ -1,0 +1,89 @@
+# Authenticode-sign Windows files through Azure Artifact Signing -- the one copy for redrob-labs.
+#
+# Rules it encodes (from redrob-launcher #20 and the office 0.10.4 -> 0.10.6 release):
+#   - the Azure credential is the job's OpenID Connect login (`azure/login`), done AFTER the build and
+#     right before this step; there is no certificate file and no client secret anywhere;
+#   - the signtool dlib runs with an ExcludeCredentials list, so a missing login fails in seconds
+#     instead of waiting on a browser nobody sees;
+#   - every file is verified with `signtool verify /pa` and must read Status=Valid; the signer is
+#     compared on its CN attribute (Windows renders the subject as `CN="McKinley Rice, Inc.", O=...`,
+#     so a whole-string compare is wrong).
+#
+# Call it from a windows-latest job that has `environment: release` and `permissions: id-token: write`:
+#
+#   - uses: azure/login@v3
+#     with:
+#       client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+#       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#   - uses: redrob-labs/.github/actions/sign-windows@main
+#     with:
+#       files: |
+#         dist/redrob-foo.exe
+#         dist/redrob-foo-*.msi
+#       description: Redrob Foo
+#       url: https://github.com/redrob-labs/redrob-foo
+#       endpoint: ${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}
+#       account: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}
+#       cert-profile: ${{ secrets.ARTIFACT_SIGNING_CERT_PROFILE }}
+#
+# Sign the inner executables before packaging and the installer after, calling this twice if the
+# packager (WiX, NSIS, electron-builder) sits between them.
+#
+# With the three signing inputs empty the action warns and leaves the files unsigned (a dry run on a
+# fork still produces installers); half-configured it fails.
+#
+# When a bundler must sign in the middle of its own packaging (tauri's `bundle.windows.signCommand`,
+# electron-builder's `win.sign` hook), check this repository out and point the bundler at
+# `actions/sign-windows/sign.ps1 <file>` with ARTIFACT_SIGNING_* in the environment -- same recipe,
+# same copy, no fork of it in the app repository.
+
+name: Sign Windows files (Azure Artifact Signing)
+description: Authenticode-sign and verify files with Azure Artifact Signing through the job's OIDC login
+
+inputs:
+  files:
+    description: Newline- or space-separated paths or globs to sign
+    required: true
+  description:
+    description: Program description embedded in the signature (/d)
+    required: true
+  url:
+    description: Program URL embedded in the signature (/du)
+    required: true
+  endpoint:
+    description: Artifact Signing endpoint, e.g. https://krc.codesigning.azure.net
+    required: false
+    default: ""
+  account:
+    description: Artifact Signing account name
+    required: false
+    default: ""
+  cert-profile:
+    description: Artifact Signing certificate profile name
+    required: false
+    default: ""
+  expected-cn:
+    description: CN the signer certificate must carry after signing
+    required: false
+    default: McKinley Rice, Inc.
+  timestamp-url:
+    description: RFC 3161 timestamp server
+    required: false
+    default: http://timestamp.acs.microsoft.com
+
+runs:
+  using: composite
+  steps:
+    - name: Sign and verify
+      shell: pwsh
+      env:
+        SIGN_FILES: ${{ inputs.files }}
+        SIGN_DESCRIPTION: ${{ inputs.description }}
+        SIGN_URL: ${{ inputs.url }}
+        ARTIFACT_SIGNING_ENDPOINT: ${{ inputs.endpoint }}
+        ARTIFACT_SIGNING_ACCOUNT: ${{ inputs.account }}
+        ARTIFACT_SIGNING_CERT_PROFILE: ${{ inputs.cert-profile }}
+        EXPECTED_CN: ${{ inputs.expected-cn }}
+        WINDOWS_TIMESTAMP_URL: ${{ inputs.timestamp-url }}
+      run: ${{ github.action_path }}/sign.ps1

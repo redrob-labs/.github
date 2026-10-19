@@ -1,0 +1,6 @@
+{
+  "name": "Release (tag -> signed installers -> GitHub release)",
+  "description": "The redrob-labs release shape: resolve the version from the tag, build per platform, sign Windows through Azure Artifact Signing (OIDC) after the build, publish through the shared release-publish workflow.",
+  "iconName": "octicon tag",
+  "categories": ["Deployment"]
+}
