@@ -149,11 +149,11 @@ jobs:
               missing=""
               if [ "$longest" -lt "$MIN_BODY" ]; then
                 missing="$missing
-          - a comment on your own pull request of at least $MIN_BODY characters (your longest is $longest): a review summary (**Files changed → Review changes → Comment**) or a plain comment in the Conversation tab. Read the diff the way a reviewer would, and say what you checked, what you did not, and what you are unsure about;"
+          - one comment of $MIN_BODY+ characters on what you checked and what you're unsure about (yours: $longest)"
               fi
               if [ -n "$empty" ]; then
                 missing="$missing
-          - these sections of the description are empty:$empty fill each one in (write \"nothing\" if that is the honest answer)."
+          - fill in:$empty (\"nothing\" is fine)"
               fi
               if [ -z "$missing" ]; then
                 echo "Self-review done; the request to $REQUESTED stands."
@@ -165,10 +165,10 @@ jobs:
 
               marker='<!-- pr-policy:review-gate -->'
               msg="$marker
-          Review request to @$REQUESTED removed by the pull request policy. Before asking a maintainer to review, finish your own review. Still missing:
+          Thanks for the PR! Before review, please:
           $missing
 
-          Request the review again once everything above is done."
+          Then request @$REQUESTED again."
               existing=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
                 --jq ".[] | select(.user.type == \"Bot\") | select(.body | startswith(\"$marker\")) | .id" | head -n1)
               if [ -n "$existing" ]; then
