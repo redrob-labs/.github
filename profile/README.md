@@ -15,7 +15,6 @@ Korean is a first-class locale in everything here, not a translation layer bolte
 | [redrob-office](https://github.com/redrob-labs/redrob-office) | Docs, Sheets, Slides, PDF, Markdown and Hangul editors in one window |
 | [redrob-design](https://github.com/redrob-labs/redrob-design) | Prompt-driven design editor that opens `.fig` and `.pen` files |
 | [redrob-canvas](https://github.com/redrob-labs/redrob-canvas) | Agentic graphics editor built with Rust and Qt Quick |
-| [redrob-query](https://github.com/redrob-labs/redrob-query) | JVM-free, AI-native database client for PostgreSQL, MySQL, SQLite and MongoDB |
 | [redrob-recall](https://github.com/redrob-labs/redrob-recall) | Local-first file search with grounded answers about your own files |
 | [redrob-studio](https://github.com/redrob-labs/redrob-studio) | Local image and audio studio on your own GPU; nothing you create leaves your machine |
 
