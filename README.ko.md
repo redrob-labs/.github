@@ -12,7 +12,7 @@ English: [README.md](./README.md)
 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | 서로를 대하는 방식. |
 | [SECURITY.md](./SECURITY.md) | 취약점 신고를 보내는 곳. 공개 이슈는 절대 아닙니다. |
 | [SUPPORT.md](./SUPPORT.md) | 질문을 보내는 곳. |
-| [FORKS.ko.md](./FORKS.ko.md) | 이 저장소 대부분이 포크이기 때문에 적용되는 규칙. |
+| [FORKS.ko.md](./FORKS.ko.md) | 이 저장소 상당수가 포크이기 때문에 적용되는 규칙. |
 
 이 경로의 파일은 **이 조직에서 자기 사본이 없는 모든 저장소**에 쓰입니다. 저장소 자신의 파일이 항상
 이기므로 덮어쓰기가 아니라 바닥값입니다. `profile/README.md` 는 조직 공개 프로필 페이지에
@@ -41,17 +41,11 @@ English: [README.md](./README.md)
 기록되지 않은 격차는 표준이 틀린 것으로 읽히므로 적어 둡니다.
 
 [GITFLOW.ko.md](https://github.com/mckinley-and-rice/.github/blob/main/docs/GITFLOW.ko.md) 는
-`develop` 을 기본 브랜치로 삼습니다. 여기 저장소 네 개가 아직 `main` 입니다. `redrob-studio`,
-`redrob-verify`, `redrob-image`, `redrob-labs`. 열네 개는 `develop` 입니다. 기본
+`develop` 을 기본 브랜치로 삼습니다. 여기 저장소 네 개가 아직 `main` 입니다. `redrob-image`,
+`redrob-labs`, 그리고 보관된 `redrob-studio`, `redrob-verify`. 열두 개는 `develop` 입니다. 기본
 브랜치를 바꾸는 것은 CI에 대한 브레이킹 체인지입니다. `branches: [main]` 로 필터된 워크플로가 조용히
 돌기를 멈추기 때문입니다. 그래서 그 네 개는 각각 같은 변경 안에서 워크플로 브랜치 필터를 전수
 점검해야 합니다.
-
-공개 저장소 세 개가 GitHub가 분류할 수 없는 라이선스를 출하하고 있어 사이드바에 라이선스가 아예
-보이지 않습니다. `redrob-cowork`, `redrob-design`, `redrob-ide` 가 `NOASSERTION` 으로 나옵니다. 앞의
-둘은 `LICENSE` 파일이 라이선스 본문보다 앞에 포크 저작권 줄을 쌓아 두었기 때문입니다. 라이선스는
-실재하고 표기도 맞습니다. 깨진 것은 GitHub의 탐지뿐이며, 오픈소스 저장소에서는 대부분의 사람이 그
-탐지로 확인합니다.
 
 ## 이 저장소 자신의 브랜치
 

@@ -1,6 +1,6 @@
 # Working in a fork
 
-Most repositories here are forks. That single fact changes more about how you contribute than
+Many repositories here are forks. That single fact changes more about how you contribute than
 anything else in [CONTRIBUTING.md](./CONTRIBUTING.md), because a fork's most consequential
 operation is not a feature: it is absorbing upstream, which arrives as a large, conflict-prone
 merge.
@@ -10,21 +10,21 @@ merge.
 | Repository | Upstream |
 |---|---|
 | `redrob-code` | opencode |
-| `redrob-cowork` | OpenWork |
-| `redrob-design` | OpenPencil |
-| `redrob-office` | GenOffice |
-| `redrob-browser` | Chromium |
-| `redrob-ide` | Visual Studio Code |
-| `redrob-cad` | FreeCAD |
-| `redrob-reblend` | Blender |
-| `redrob-os` | Home Assistant OS (`os/`), ZeroClaw (`agent/`) |
+| `redrob-browser` | Obscura |
+| `redrob-cad` | CADCraft |
+| `redrob-canvas` | PhotoCraft, VectorCraft, DesignCraft, craft-libs |
+| `redrob-film` | FilmCraft |
+| `redrob-os` | ZeroClaw (`agent/`), Fedora Atomic base image |
 
-Each repository records its own upstream and the exact point it sits on, in `UPSTREAM.md` or
-`docs/UPSTREAM.md`, with the pin in `upstream-base.json`, `UPSTREAM_VERSION` or
-`docs/upstream-sources.toml`. Read that file, not this table, before you touch anything: this
+`redrob-board`, `redrob-grow`, `redrob-shape` and `redrob-silicon` are not forks: they are
+written from scratch and only read other projects for methods.
+
+Each repository records its own upstream and the exact point it sits on, in `UPSTREAM.md`,
+`NOTICE`, `NOTICE.md` or `SOURCE_ORIGINS.md`, with the pin in `upstream-base.json` where there
+is one. Read that file, not this table, before you touch anything: this
 table tells you a fork exists, and that file tells you where it is.
 
-## The two rules that are enforced
+## The two rules
 
 **Never replace an upstream copyright notice.** Add ours below theirs. MIT requires the notice
 to be retained in every copy, so replacing it is a licence violation and not a tidy-up. The
@@ -34,13 +34,10 @@ why the notices look the way they do.
 A copyright notice is never translated, either. Korean documents keep their prose in Korean and
 quote the notice verbatim, because a translated notice reads as a second, different holder.
 
-**Never add anything under a subtree upstream licenses separately.** In `redrob-cowork` that is
-`ee/`, which upstream licenses under the OpenWork Enterprise Edition License and which requires
-an upstream subscription for production use. That fork ships the MIT-licensed portion only.
+**Never add anything under a subtree upstream licenses separately.** Such a subtree ships under
+upstream's terms, not ours, so code added there is not ours to license.
 
-Both are checked: `pnpm check:upstream-boundary` in `redrob-cowork`, `redrob-office` and
-`redrob-design`. It also verifies the pin and the attribution lines, so it fails on a stale
-`upstream-base.json` as well.
+Neither rule is checked by CI in the current repositories. Review them by hand.
 
 ## Some upstream identifiers are load-bearing
 
@@ -54,9 +51,6 @@ Do not finish a rebrand while resolving a conflict. These have all bitten us:
   prose in the message body; leave the code.
 - **Some package names are not ours to rename.** `@gitlab/opencode-gitlab-auth`,
   `opencode-gitlab-auth` and `opencode-poe-auth` are real published packages.
-- **Some strings belong to upstream's own resources.** In `redrob-cad`, six of eight
-  `QT_TR_NOOP` strings are upstream FreeCAD resources and stay; only the two that are ours
-  change.
 - **Sign-in prompts naming a third party usually mean it.** In `redrob-browser`, "Sign in to
   Google?" is correct: that button signs into a Google account, not a Redrob one. Rewriting it
   to our name is a false statement about a product that does not exist.
@@ -83,20 +77,6 @@ Three things hold on every sync we have run:
   know which side wins. Keep ours, take their surrounding change.
 - **Resolving is a judgement call, so no tool should guess.** Our sync workflow stops on
   conflict and reports which paths conflicted rather than resolving them.
-
-## Patch-based forks
-
-`redrob-browser` and `redrob-ide` do not carry a merged tree; they carry patches applied to a
-pristine upstream checkout. Two rules there:
-
-**Pin `.patch` files to LF.** Add `*.patch -text` to `.gitattributes`. On Windows, `core.autocrlf`
-or the checkout action will rewrite a patch to CRLF, the `index` line's trailing CR makes the
-blob lookup fail, and context lines stop matching, so a patch that applies on Linux breaks only
-on Windows. You can reproduce it on Linux by converting a patch to CRLF.
-
-**A reproduction gate proves you can rebuild the tree, not that you are current.** A
-byte-identical replay of the patch set says nothing about whether upstream has moved. Currency
-is the pin file's job.
 
 ## Before you propose a change to a fork's boundary
 

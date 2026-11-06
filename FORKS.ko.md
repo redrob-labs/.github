@@ -1,6 +1,6 @@
 # 포크에서 작업하기
 
-여기 저장소 대부분은 포크입니다. 그 사실 하나가 [CONTRIBUTING.ko.md](./CONTRIBUTING.ko.md) 의 다른
+여기 저장소 상당수는 포크입니다. 그 사실 하나가 [CONTRIBUTING.ko.md](./CONTRIBUTING.ko.md) 의 다른
 어떤 내용보다 기여 방식을 크게 바꿉니다. 포크에서 가장 파급이 큰 작업은 기능이 아니라 상류를 흡수하는
 일이고, 그것은 충돌이 잦은 큰 머지로 도착하기 때문입니다.
 
@@ -9,21 +9,21 @@ English: [FORKS.md](./FORKS.md)
 | 저장소 | 상류 |
 |---|---|
 | `redrob-code` | opencode |
-| `redrob-cowork` | OpenWork |
-| `redrob-design` | OpenPencil |
-| `redrob-office` | GenOffice |
-| `redrob-browser` | Chromium |
-| `redrob-ide` | Visual Studio Code |
-| `redrob-cad` | FreeCAD |
-| `redrob-reblend` | Blender |
-| `redrob-os` | Home Assistant OS (`os/`), ZeroClaw (`agent/`) |
+| `redrob-browser` | Obscura |
+| `redrob-cad` | CADCraft |
+| `redrob-canvas` | PhotoCraft, VectorCraft, DesignCraft, craft-libs |
+| `redrob-film` | FilmCraft |
+| `redrob-os` | ZeroClaw (`agent/`), Fedora Atomic 기본 이미지 |
 
-각 저장소는 자기 상류와 자기가 올라앉은 정확한 지점을 `UPSTREAM.md` 또는 `docs/UPSTREAM.md` 에
-기록하고, 핀은 `upstream-base.json`, `UPSTREAM_VERSION`, `docs/upstream-sources.toml` 에 있습니다.
+`redrob-board`, `redrob-grow`, `redrob-shape`, `redrob-silicon` 은 포크가 아닙니다. 처음부터 직접
+작성했고, 다른 프로젝트는 방법을 참고하려고 읽기만 합니다.
+
+각 저장소는 자기 상류와 자기가 올라앉은 정확한 지점을 `UPSTREAM.md`, `NOTICE`, `NOTICE.md`,
+`SOURCE_ORIGINS.md` 중 하나에 기록하고, 핀이 있으면 `upstream-base.json` 에 있습니다.
 무엇을 건드리기 전에 이 표가 아니라 그 파일을 읽으십시오. 이 표는 포크가 있다는 것만 말하고, 그 파일이
 그것이 어디 있는지를 말합니다.
 
-## 강제되는 두 규칙
+## 두 규칙
 
 **상류 저작권 표기를 절대 대체하지 마십시오.** 우리 것을 그 아래에 추가합니다. MIT는 모든 복사본에
 표기를 유지할 것을 요구하므로, 대체는 정리가 아니라 라이선스 위반입니다. 저작권자는 괄호에 브랜드를
@@ -32,13 +32,10 @@ English: [FORKS.md](./FORKS.md)
 저작권 표기는 번역하지도 않습니다. 한국어 문서는 산문은 한국어로 쓰고 표기 줄은 원문 그대로
 인용합니다. 번역된 표기 줄은 두 번째의, 다른 권리자로 읽힙니다.
 
-**상류가 별도 라이선스로 두는 하위 트리 아래에 아무것도 추가하지 마십시오.** `redrob-cowork` 에서는
-그것이 `ee/` 이고, 상류가 OpenWork Enterprise Edition License로 두며 프로덕션 사용에 상류 구독이
-필요합니다. 그 포크는 MIT 라이선스 부분만 출하합니다.
+**상류가 별도 라이선스로 두는 하위 트리 아래에 아무것도 추가하지 마십시오.** 그 하위 트리는 우리
+조건이 아니라 상류 조건으로 출하되므로, 거기 넣은 코드는 우리가 라이선스할 수 없습니다.
 
-둘 다 검사됩니다. `redrob-cowork`, `redrob-office`, `redrob-design` 에서
-`pnpm check:upstream-boundary` 입니다. 핀과 표기 줄도 함께 검증하므로, 낡은 `upstream-base.json`
-에서도 실패합니다.
+지금 저장소들에서는 두 규칙 모두 CI가 검사하지 않습니다. 사람이 직접 확인하십시오.
 
 ## 일부 상류 식별자는 기능을 지고 있습니다
 
@@ -51,8 +48,6 @@ English: [FORKS.md](./FORKS.md)
   보이면서, 복구 경로를 조용히 영구적으로 깹니다. 메시지 본문의 산문만 리브랜딩하고 코드는 두십시오.
 - **일부 패키지 이름은 우리가 개명할 권리가 없습니다.** `@gitlab/opencode-gitlab-auth`,
   `opencode-gitlab-auth`, `opencode-poe-auth` 는 실제 발행된 패키지입니다.
-- **일부 문자열은 상류 자신의 자원입니다.** `redrob-cad` 에서 여덟 개 `QT_TR_NOOP` 문자열 중 여섯
-  개는 상류 FreeCAD 자원이라 유지하고, 우리 것 둘만 바꿉니다.
 - **제3자를 이름으로 부르는 로그인 문구는 보통 그것을 뜻합니다.** `redrob-browser` 의
   "Sign in to Google?" 은 맞는 문구입니다. 그 버튼은 Redrob 계정이 아니라 Google 계정으로
   로그인합니다. 우리 이름으로 바꾸는 것은 존재하지 않는 제품에 대한 거짓 진술입니다.
@@ -78,20 +73,6 @@ English: [FORKS.md](./FORKS.md)
   알 수 없습니다. 우리 것을 유지하고 그들의 주변 변경을 취합니다.
 - **해결은 판단이므로 어떤 도구도 추측해서는 안 됩니다.** 우리 싱크 워크플로는 충돌에서 멈추고, 해결
   대신 어떤 경로가 충돌했는지 보고합니다.
-
-## 패치 기반 포크
-
-`redrob-browser` 와 `redrob-ide` 는 머지된 트리를 들고 있지 않고, pristine 상류 체크아웃에 적용되는
-패치를 들고 있습니다. 거기에는 두 규칙이 있습니다.
-
-**`.patch` 파일을 LF로 고정하십시오.** `.gitattributes` 에 `*.patch -text` 를 넣습니다. Windows에서는
-`core.autocrlf` 나 체크아웃 액션이 패치를 CRLF로 바꾸고, `index` 줄 끝의 CR 때문에 블롭 조회가
-실패하며, 컨텍스트 줄도 어긋나서 리눅스에서 통과한 패치가 Windows에서만 깨집니다. 리눅스에서 패치를
-CRLF로 바꿔 재현할 수 있습니다.
-
-**재현 게이트는 트리를 다시 만들 수 있음을 증명하고, 최신임을 증명하지는 않습니다.** 패치 세트를
-바이트 단위로 동일하게 재생한다고 해서 상류가 움직였는지에 대해 아무것도 말해 주지 않습니다. 최신인지는
-핀 파일의 몫입니다.
 
 ## 포크 경계 변경을 제안하기 전에
 
