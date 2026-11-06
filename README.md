@@ -12,7 +12,7 @@ Community health defaults for every repository in this organization.
 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | How we behave with each other. |
 | [SECURITY.md](./SECURITY.md) | Where a vulnerability report goes. Never a public issue. |
 | [SUPPORT.md](./SUPPORT.md) | Where a question goes. |
-| [FORKS.md](./FORKS.md) | The rules that apply because most of these repositories are forks. |
+| [FORKS.md](./FORKS.md) | The rules that apply because many of these repositories are forks. |
 
 Files at these paths are used by **every repository in this organization that does not have its
 own copy**, so a repository's own file always wins and this is a floor rather than an override.
@@ -42,17 +42,11 @@ is per organization; the standards are not.
 Recorded because an unrecorded gap reads as the standard being wrong.
 
 [GITFLOW.md](https://github.com/mckinley-and-rice/.github/blob/main/docs/GITFLOW.md) makes
-`develop` the default branch. Four repositories here are still on `main`: `redrob-studio`,
-`redrob-verify`, `redrob-image` and `redrob-labs`. Fourteen are on `develop`.
+`develop` the default branch. Four repositories here are still on `main`: `redrob-image`,
+`redrob-labs`, and the archived `redrob-studio` and `redrob-verify`. Twelve are on `develop`.
 Changing a default branch is a breaking change to CI, because a workflow filtered on
-`branches: [main]` stops running silently, so each of those five needs its workflow branch
+`branches: [main]` stops running silently, so each of those four needs its workflow branch
 filters audited in the same change.
-
-Three public repositories ship a license GitHub cannot classify, so their sidebar shows no
-license at all: `redrob-cowork`, `redrob-design` and `redrob-ide` report `NOASSERTION`. In the
-first two this is because the `LICENSE` file opens with stacked fork copyright lines before the
-license body. The license is real and the notices are correct; what is broken is only GitHub's
-detection of it, and for an open source repository that detection is how most people check.
 
 ## This repository's own branches
 

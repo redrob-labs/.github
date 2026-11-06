@@ -27,10 +27,10 @@ Open an issue before writing the code.
 - A rewrite. A pull request that rewrites a subsystem is very hard to review and usually
   arrives after the reviewer would have said no to the plan.
 
-## Most of these repositories are forks
+## Many of these repositories are forks
 
-Read [FORKS.md](./FORKS.md) before your first change. Two of its rules are enforced by CI, and
-one of them will make you delete work if you learn it late: never replace an upstream copyright
+Read [FORKS.md](./FORKS.md) before your first change. Two of its rules will make you delete
+work if you learn them late: never replace an upstream copyright
 notice, and never add anything under a directory that upstream licenses separately.
 
 ## Branches
@@ -160,8 +160,8 @@ Do not open a public issue for a vulnerability. See [SECURITY.md](./SECURITY.md)
 ## License of your contribution
 
 By contributing you agree your work is released under the license in that repository's
-`LICENSE`, which is not the same file in every repository here: most are Apache-2.0, one is
-MIT, one is GPL-3.0, and the forks stack our notice under the upstream one. Check the repository
+`LICENSE`, which is not the same file in every repository here: most are Apache-2.0, two are
+MIT, and the forks stack our notice under the upstream one. Check the repository
 you are contributing to.
 
 **There is no CLA and no sign-off requirement.** You keep the copyright in your own
