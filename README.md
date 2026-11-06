@@ -52,11 +52,10 @@ filters audited in the same change.
 
 | | |
 |---|---|
-| `main` | **Default.** The published state. GitHub serves the inherited health files from here. |
-| `develop` | Integration. Changes land here first, then are promoted by a merge commit. |
+| `main` | **Default and only branch.** GitHub serves the inherited health files from here. |
 | Branch names | `<type>/<slug>`, types `feat fix chore docs test refactor perf`. |
 
-`main` being the default is a deliberate deviation from the shared standard, for the reason the
-standard itself gives: the default branch of a `.github` repository is the surface served to
-every other repository, not the contributors' view. Both branches are protected, and admin
-enforcement is on.
+A change lands through a pull request straight into `main`. There is no `develop`: the default
+branch of a `.github` repository is the surface served to every other repository, and this one
+holds documents and shared workflows with nothing of its own to build. `main` is protected, and
+admin enforcement is on.
