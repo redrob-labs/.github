@@ -16,7 +16,7 @@ merge.
 | `redrob-film` | FilmCraft |
 | `redrob-os` | ZeroClaw (`agent/`), Fedora Atomic base image |
 
-`redrob-board`, `redrob-grow`, `redrob-shape` and `redrob-silicon` are not forks: they are
+`redrob-board` and `redrob-shape` are not forks: they are
 written from scratch and only read other projects for methods.
 
 Each repository records its own upstream and the exact point it sits on, in `UPSTREAM.md`,

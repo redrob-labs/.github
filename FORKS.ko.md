@@ -15,7 +15,7 @@ English: [FORKS.md](./FORKS.md)
 | `redrob-film` | FilmCraft |
 | `redrob-os` | ZeroClaw (`agent/`), Fedora Atomic 기본 이미지 |
 
-`redrob-board`, `redrob-grow`, `redrob-shape`, `redrob-silicon` 은 포크가 아닙니다. 처음부터 직접
+`redrob-board`, `redrob-shape` 은 포크가 아닙니다. 처음부터 직접
 작성했고, 다른 프로젝트는 방법을 참고하려고 읽기만 합니다.
 
 각 저장소는 자기 상류와 자기가 올라앉은 정확한 지점을 `UPSTREAM.md`, `NOTICE`, `NOTICE.md`,

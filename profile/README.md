@@ -17,7 +17,6 @@ Korean is a first-class locale in everything here, not a translation layer bolte
 | [redrob-shape](https://github.com/redrob-labs/redrob-shape) | Agentic 3D suite that shapes and shades models by prompt and opens existing `.blend` files |
 | [redrob-cad](https://github.com/redrob-labs/redrob-cad) | Parametric 3D modeller where an agent helps you design, constrain and iterate on parts |
 | [redrob-board](https://github.com/redrob-labs/redrob-board) | PCB design studio that takes a spoken spec to a factory-ready board |
-| [redrob-grow](https://github.com/redrob-labs/redrob-grow) | Agentic grower that keeps crops alive in rooms built for people |
 
 ### Research and evaluation
 

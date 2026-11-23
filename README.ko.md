@@ -42,7 +42,7 @@ English: [README.md](./README.md)
 
 [GITFLOW.ko.md](https://github.com/mckinley-and-rice/.github/blob/main/docs/GITFLOW.ko.md) 는
 `develop` 을 기본 브랜치로 삼습니다. 여기 저장소 네 개가 아직 `main` 입니다. `redrob-image`,
-`redrob-labs`, 그리고 보관된 `redrob-studio`, `redrob-verify`. 열두 개는 `develop` 입니다. 기본
+`redrob-labs`, 그리고 보관된 `redrob-studio`, `redrob-verify`. 열 개는 `develop` 입니다. 기본
 브랜치를 바꾸는 것은 CI에 대한 브레이킹 체인지입니다. `branches: [main]` 로 필터된 워크플로가 조용히
 돌기를 멈추기 때문입니다. 그래서 그 네 개는 각각 같은 변경 안에서 워크플로 브랜치 필터를 전수
 점검해야 합니다.
